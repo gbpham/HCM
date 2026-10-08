@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vận Dụng Tư Tưởng Hồ Chí Minh - Game Xếp Hình Mật Mã Từ Khóa</title>
+  <meta name="description" content="Trò chơi xếp hình tương tác vận dụng tư tưởng Hồ Chí Minh về xây dựng văn hóa, đạo đức, con người Việt Nam trong giai đoạn hiện nay" />
+  
+  <!-- Fonts: Be Vietnam Pro & Montserrat (Được tối ưu 100% cho chuẩn chữ Tiếng Việt) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css" />
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <!-- Ambient Particle Canvas -->
+  <canvas id="bg-particles"></canvas>
+
+  <div id="app">
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="logo-icon">✨</div>
+        <div class="logo-text">
+          <h1>TƯ TƯỞNG HỒ CHÍ MINH VỀ VĂN HÓA & ĐẠO ĐỨC</h1>
+          <span class="subtitle">Vận Dụng Xây Dựng Con Người Việt Nam Hiện Nay</span>
+        </div>
+      </div>
+      
+      <nav class="nav-links">
+        <button id="nav-select" class="nav-btn active">
+          <span class="icon">🧩</span> Chọn Thử Thách
+        </button>
+        <button id="nav-codex" class="nav-btn">
+          <span class="icon">📚</span> Thư Viện Kiến Thức
+        </button>
+        <button id="nav-trophy" class="nav-btn">
+          <span class="icon">🏆</span> Tủ Đồ Quà & Huy Hiệu
+          <span id="badge-count-tag" class="count-tag">0</span>
+        </button>
+      </nav>
+
+      <div class="header-controls" style="display:flex; gap:0.6rem; align-items:center;">
+        <button id="btn-reset-game" class="icon-btn" title="Reset Tiến Trình (Chơi Lại)">
+          🔄
+        </button>
+        <button id="audio-toggle" class="icon-btn" title="Bật/Tắt âm thanh">
+          <span id="audio-icon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+      <!-- SECTION 1: PUZZLE SELECTION -->
+      <section id="screen-select" class="screen active">
+        <div class="section-title-box">
+          <span class="badge-pill">Tư Tưởng Hồ Chí Minh</span>
+          <h2>VẬN DỤNG XÂY DỰNG VĂN HÓA, ĐẠO ĐỨC & CON NGƯỜI VIỆT NAM</h2>
+          <p>Hoàn thành bức hình puzzle để mở khóa Mật Mã Từ Khóa và học tập các giá trị văn hóa, đạo đức con người Việt Nam hiện nay!</p>
+        </div>
+
+        <!-- Image Level Cards Grid -->
+        <div class="level-cards-grid" id="level-cards-container">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </section>
+
+      <!-- SECTION 2: GAMEPLAY -->
+      <section id="screen-game" class="screen">
+        <div class="game-layout">
+          <!-- Left Panel: Info & Tools -->
+          <aside class="game-sidebar glass-card">
+            <div class="puzzle-title-header">
+              <button id="btn-back-select" class="btn-secondary btn-sm">
+                ← Chọn ảnh khác
+              </button>
+              <h3 id="current-puzzle-title">Tên Địa Danh</h3>
+              <span id="current-puzzle-topic" class="topic-tag">Chủ đề lý luận</span>
+            </div>
+
+            <div class="reference-image-container" id="reference-preview-box">
+              <img id="reference-img" src="" alt="Ảnh mẫu" />
+              <div class="preview-overlay-btn" id="btn-zoom-preview" title="Xem phóng to ảnh mẫu">
+                <span>🔍 Xem ảnh gốc</span>
+              </div>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="stats-dashboard">
+              <div class="stat-item">
+                <span class="stat-icon">⏱️</span>
+                <div class="stat-info">
+                  <span class="stat-label">Thời gian</span>
+                  <span id="timer-display" class="stat-value">00:00</span>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <span class="stat-icon">🎯</span>
+                <div class="stat-info">
+                  <span class="stat-label">Số bước</span>
+                  <span id="moves-display" class="stat-value">0</span>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <span class="stat-icon">✨</span>
+                <div class="stat-info">
+                  <span class="stat-label">Độ chính xác</span>
+                  <span id="accuracy-display" class="stat-value">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="game-tools-group">
+              <button id="btn-reshuffle" class="tool-btn">
+                <span>🔀</span> Xáo trộn lại
+              </button>
+            </div>
+          </aside>
+
+          <!-- Center Board: Puzzle Grid -->
+          <div class="game-board-wrapper">
+            <div class="board-frame glass-card">
+              <div id="puzzle-board" class="puzzle-board"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: KNOWLEDGE CODEX -->
+      <section id="screen-codex" class="screen">
+        <div class="section-title-box">
+          <span class="badge-pill">Thư Viện Lý Luận</span>
+          <h2>XÂY DỰNG VĂN HÓA, ĐẠO ĐỨC & CON NGƯỜI VIỆT NAM GIỜ ĐÂY</h2>
+          <p>Tóm tắt bài học vận dụng Tư tưởng Hồ Chí Minh: Cần Kiệm Liêm Chính, Nêu Gương, Văn Hóa Mạng, Sức Trẻ Tình Nguyện, Soi Đường và Tự Cường</p>
+        </div>
+
+        <div class="codex-grid" id="codex-cards-container">
+          <!-- Dynamically generated dataset -->
+        </div>
+      </section>
+
+      <!-- SECTION 4: TROPHY VAULT & GIFT COLLECTION -->
+      <section id="screen-trophy" class="screen">
+        <div class="section-title-box">
+          <span class="badge-pill">Bộ Sưu Tập</span>
+          <h2>TỦ ĐỒ PHẦN THƯỞNG & HUY HIỆU</h2>
+          <p>Các danh hiệu cao quý và quà tặng bạn nhận được sau khi giải mã chính xác các từ khóa!</p>
+        </div>
+
+        <div class="trophy-summary-bar glass-card">
+          <div class="trophy-stat">
+            <span class="trophy-icon">🏆</span>
+            <div>
+              <span class="label">Tổng Huy Hiệu:</span>
+              <span id="total-badges-count" class="val">0 / 6</span>
+            </div>
+          </div>
+          <div class="trophy-stat">
+            <span class="trophy-icon">⭐</span>
+            <div>
+              <span class="label">Tổng Sao Tích Lũy:</span>
+              <span id="total-stars-count" class="val">0</span>
+            </div>
+          </div>
+          <div class="trophy-stat">
+            <span class="trophy-icon">🎁</span>
+            <div>
+              <span class="label">Phần Thưởng Đã Mở:</span>
+              <span id="total-gifts-count" class="val">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="vault-items-grid" id="vault-items-container">
+          <!-- Dynamically generated trophies -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- MODAL 1: FULL IMAGE PREVIEW -->
+    <div id="modal-preview" class="modal-overlay">
+      <div class="modal-content glass-card modal-lg">
+        <button class="modal-close" id="close-modal-preview">&times;</button>
+        <h3 id="preview-modal-title">Ảnh Nguyên Bản</h3>
+        <div class="preview-img-wrapper">
+          <img id="full-preview-img" src="" alt="Ảnh phóng to" />
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: KEYWORD CHALLENGE -->
+    <div id="modal-keyword" class="modal-overlay">
+      <div class="modal-content glass-card modal-md text-center">
+        <div class="success-banner">
+          <span class="star-anim">⭐</span>
+          <h2>HOÀN THÀNH XẾP HÌNH!</h2>
+          <p class="sub-success">Bạn đã ghép thành công bức hình!</p>
+        </div>
+
+        <div class="challenge-box glass-card">
+          <div class="challenge-header">
+            <span id="challenge-badge-tag" class="badge-pill">Thách Thức Trắc Nghiệm</span>
+            <h3 id="keyword-question-title">Câu hỏi đặt ra...</h3>
+          </div>
+
+          <p id="keyword-question-desc" class="question-text">
+            Nội dung câu hỏi lý luận...
+          </p>
+
+          <!-- DẠNG 1: TRẮC NGHIỆM A B C D (Cho màn Đổi Vị Trí - Mode SWAP) -->
+          <div id="multiple-choice-container" class="options-grid-container hidden">
+            <!-- Populated dynamically with 4 option buttons -->
+          </div>
+
+          <!-- DẠNG 2: NHẬP TỪ KHÓA & GỢI Ý (Cho màn Trượt Ô - Mode SLIDE) -->
+          <div id="text-input-container" class="hidden">
+            <form id="keyword-form" class="keyword-input-group">
+              <input 
+                type="text" 
+                id="keyword-input" 
+                placeholder="Nhập từ khóa tại đây..." 
+                autocomplete="off"
+              />
+              <button type="submit" class="btn-primary">
+                <span>🚀</span> Gửi Từ Khóa
+              </button>
+            </form>
+
+            <!-- First Letter Hint Section (Chỉ dành cho Trượt Ô) -->
+            <div class="keyword-hints-group" style="margin-top:0.8rem;">
+              <button id="btn-toggle-hint" type="button" class="btn-secondary btn-sm" style="font-size:0.85rem; padding:0.4rem 0.9rem; border-color:rgba(245,158,11,0.5); color:var(--accent-gold-light); display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                💡 Xem Gợi Ý Chữ Cái Đầu
+              </button>
+              <div id="keyword-hint-text" class="hint-display hidden" style="margin-top:0.6rem;">
+                💡 <b>Gợi ý chữ cái đầu:</b> <span id="first-letter-hint-val" style="color:var(--accent-gold-light); font-weight:bold;"></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: REWARD UNLOCK (MỞ QUÀ & VÒNG QUAY / HỘP QUÀ MAY MẮN) -->
+    <div id="modal-reward" class="modal-overlay">
+      <div class="modal-content glass-card modal-md text-center">
+        <div class="reward-header">
+          <span class="confetti-icon">🎉</span>
+          <h2 class="gold-gradient-text">TỪ KHÓA CHÍNH XÁC!</h2>
+          <p>Chúc mừng bạn đã giải mã thành công Mật Mã Triết Học!</p>
+        </div>
+
+        <!-- Interactive Mystery Box / Wheel -->
+        <div class="reward-mystery-container">
+          <div id="gift-box-anim" class="gift-box pulse-glow">
+            <div class="gift-lid">🎁</div>
+            <div class="gift-body">✨ CLICK ĐỂ MỞ QUÀ ✨</div>
+          </div>
+
+          <!-- Revealed Reward Card (Initially Hidden) -->
+          <div id="reward-result-card" class="reward-card hidden">
+            <div class="reward-card-inner">
+              <div class="reward-badge-img" id="reward-badge-icon">🏆</div>
+              <h3 id="reward-badge-name" class="gold-gradient-text">Tên Huy Hiệu</h3>
+              <p id="reward-badge-desc" class="reward-desc">Mô tả phần thưởng</p>
+              
+              <div class="reward-flashcard-box">
+                <h4>📘 Bài Học Lý Luận Cần Ghi Nhớ:</h4>
+                <p id="reward-flashcard-text">Kiến thức trọng tâm...</p>
+              </div>
+
+              <div style="margin-top:0.8rem;">
+                <a id="reward-source-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="font-size:0.8rem; color:var(--accent-cyan); border-color:rgba(6,182,212,0.4); display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;">
+                  🌐 Xem nguồn bài viết & ảnh chi tiết
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reward-actions hidden" id="reward-actions" style="display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap;">
+          <button id="btn-claim-reward" class="btn-primary btn-lg">
+            <span>🌟</span> Nhận Phần Thưởng & Tiếp Tục
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 4: CUSTOM CONFIRM RESET MODAL -->
+    <div id="modal-confirm-reset" class="modal-overlay">
+      <div class="modal-content glass-card modal-sm text-center" style="padding: 2.2rem 1.8rem; max-width: 440px;">
+        <button class="modal-close" id="close-modal-confirm-reset">&times;</button>
+        <div style="font-size: 3rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.6));">🔄</div>
+        <h3 style="color: #fda4af; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">XÁC NHẬN RESET TIẾN TRÌNH</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.6rem;">
+          Bạn có chắc chắn muốn làm mới lại toàn bộ tiến trình chơi? Tất cả các huy hiệu và bài học đã mở khóa sẽ được đặt lại từ đầu.
+        </p>
+        <div style="display: flex; gap: 0.8rem; justify-content: center;">
+          <button id="btn-cancel-reset" class="btn-secondary" style="flex: 1; padding: 0.6rem 1rem; font-weight: 600;">
+            Hủy Bỏ
+          </button>
+          <button id="btn-do-reset" class="btn-primary" style="flex: 1; padding: 0.6rem 1rem; background: linear-gradient(135deg, #f43f5e, #e11d48); border: none; font-weight: 700; box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);">
+            Chắc Chắn Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: CUSTOM WRONG ANSWER MODAL -->
+    <div id="modal-wrong-answer" class="modal-overlay">
+      <div class="modal-content glass-card modal-sm text-center" style="padding: 2.2rem 1.8rem; max-width: 420px; border: 1px solid rgba(244, 63, 94, 0.4); box-shadow: 0 0 25px rgba(244, 63, 94, 0.3);">
+        <button class="modal-close" id="close-modal-wrong-answer">&times;</button>
+        <div style="font-size: 3.2rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.7));">❌</div>
+        <h3 style="color: #fda4af; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">ĐÁP ÁN CHƯA CHÍNH XÁC</h3>
+        <p id="wrong-modal-msg" style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.6rem;">
+          Lựa chọn của bạn chưa chính xác. Vui lòng đọc kỹ câu hỏi và thử lại!
+        </p>
+        <div style="display: flex; justify-content: center;">
+          <button id="btn-close-wrong-modal" class="btn-primary" style="padding: 0.65rem 2rem; background: linear-gradient(135deg, #f43f5e, #e11d48); border: none; font-weight: 700; box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);">
+            🔄 Thử Lại Ngay
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Audio elements synthesized via JS Web Audio API -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
